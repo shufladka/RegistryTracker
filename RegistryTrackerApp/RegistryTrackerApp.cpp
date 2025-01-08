@@ -140,9 +140,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case IDM_EXIT:
             DestroyWindow(hWnd);
             break;
-        case OnClearedField:
-            SetWindowTextA(hEditControl, "");
-            break;
         case OnClearedList:
             registryRecords.clear();
             ListView_DeleteAllItems(hwndListView);
@@ -283,24 +280,24 @@ void ListViewFilling() {
         // Индекс первого столбца (ID процесса)
         lvItem.iSubItem = 0;
 
-        // Заполнение первого столбца (ID процесса)
+        // Заполнение ID процесса
         wstring processIdText = to_wstring(record.processId);
         lvItem.pszText = const_cast<LPWSTR>(processIdText.c_str());
         ListView_InsertItem(hwndListView, &lvItem);
 
-        // Заполнение пути к процессу (столбец 1)
+        // Заполнение пути к процессу
         ListView_SetItemText(hwndListView, lvItem.iItem, 1, const_cast<LPWSTR>(record.processPath.c_str()));
 
-        // Заполнение даты и времени действия (столбец 2)
+        // Заполнение даты и времени действия
         ListView_SetItemText(hwndListView, lvItem.iItem, 2, const_cast<LPWSTR>(record.dateTime.c_str()));
 
-        // Заполнение типа операции (столбец 3)
+        // Заполнение типа операции
         ListView_SetItemText(hwndListView, lvItem.iItem, 3, const_cast<LPWSTR>(record.operationType.c_str()));
 
-        // Заполнение ключа реестра (столбец 4)
+        // Заполнение ключа реестра
         ListView_SetItemText(hwndListView, lvItem.iItem, 4, const_cast<LPWSTR>(record.registryKey.c_str()));
 
-        // Заполнение типа данных (столбец 5)
+        // Заполнение типа данных
         ListView_SetItemText(hwndListView, lvItem.iItem, 5, const_cast<LPWSTR>(record.details.c_str()));
     }
 }
@@ -538,7 +535,7 @@ void InjectDLL(HANDLE hProcess) {
         return;
     }
 
-    // Получаем адрес функции LoadLibraryA из kernel32.dll
+    // Получение дескриптора kernel32.dll
     HMODULE hKernel32 = GetModuleHandle(L"kernel32.dll");
     if (!hKernel32) {
         MessageBoxA(NULL, "Не удалось получить дескриптор kernel32.dll.",
@@ -547,6 +544,7 @@ void InjectDLL(HANDLE hProcess) {
         return;
     }
 
+    // Получение адреса функции LoadLibraryA из kernel32.dll
     FARPROC loadLibraryAddr = GetProcAddress(hKernel32, "LoadLibraryA");
     if (!loadLibraryAddr) {
         MessageBoxA(NULL, "Не удалось получить адрес функции LoadLibraryA.",
@@ -555,7 +553,7 @@ void InjectDLL(HANDLE hProcess) {
         return;
     }
 
-    // Создаем поток в целевом процессе для вызова LoadLibraryA
+    // Создание потока в целевом процессе для вызова LoadLibraryA
     HANDLE remoteThread = CreateRemoteThread(hProcess, NULL, 0,
         (LPTHREAD_START_ROUTINE)loadLibraryAddr,
         remoteMemory, 0, NULL);
@@ -566,16 +564,18 @@ void InjectDLL(HANDLE hProcess) {
         return;
     }
 
-    // Ожидаем завершения выполнения потока
+    // Ожидание завершения выполнения потока
     WaitForSingleObject(remoteThread, INFINITE);
 
-    // Закрываем поток и освобождаем выделенную память
+    // Закрытие потока
     CloseHandle(remoteThread);
+
+    // Освобождение выделенной памяти
     VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
 }
 
 void LaunchAndInject() {
-    STARTUPINFOA si = { sizeof(STARTUPINFOA) }; // Используем STARTUPINFOA для CreateProcessA
+    STARTUPINFOA si = { sizeof(STARTUPINFOA) };
     PROCESS_INFORMATION pi = { 0 };
 
     // Попытка запустить процесс
@@ -598,11 +598,11 @@ void LaunchAndInject() {
     // Инъекция DLL
     InjectDLL(pi.hProcess);
 
-    // Возобновляем поток и ждем завершения процесса
+    // Возобновление потока и ожидание завершения процесса
     ResumeThread(pi.hThread);
     WaitForSingleObject(pi.hProcess, INFINITE);
 
-    // Закрываем дескрипторы
+    // Закрытие дескрипторов
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 }

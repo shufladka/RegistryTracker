@@ -20,14 +20,13 @@ using namespace std;
 #define MAX_LOADSTRING  100
 #define IDC_LISTVIEW    101
 
-#define OnClearedField	1
-#define OnClearedList	2
-#define OnCreateFile	3
-#define OnRecordAction	4
-#define OnOpenFile  	5
-#define OnPickExe	    6
-#define OnLoadDll	    7
-#define OnStartTracking	8
+#define OnClearedList	1
+#define OnCreateFile	2
+#define OnRecordAction	3
+#define OnOpenFile  	4
+#define OnPickExe	    5
+#define OnLoadDll	    6
+#define OnStartTracking	7
 
 #define TextBufferSize	1000
 
